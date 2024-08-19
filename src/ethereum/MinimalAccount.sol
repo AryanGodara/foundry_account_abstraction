@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 import { IAccount } from "@account-abstraction/contracts/interfaces/IAccount.sol";
 import { IEntryPoint } from "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
@@ -29,14 +29,14 @@ contract MinimalAccount is IAccount, Ownable {
     ///////////////////////////
     modifier requireFromEntryPoint() {
         if ( msg.sender != address(i_entryPoint) ) {
-            revert(MinimalAccount_NotFromEntryPoint());
+            revert MinimalAccount_NotFromEntryPoint();
         }
         _;
     }
 
     modifier requireFromEntryPointOrOwner() {
-        if ( msg.sender != address(i_entryPoint) || msg.sender != owner() ) {
-            revert(MinimalAccount_NotFromEntryPointOrOwner());
+        if ( msg.sender != address(i_entryPoint) && msg.sender != owner() ) {
+            revert MinimalAccount_NotFromEntryPointOrOwner();
         }
         _;
     }
@@ -51,20 +51,20 @@ contract MinimalAccount is IAccount, Ownable {
     ///////////////////////////
     // EXTERNAL FUNCTIONS
     ///////////////////////////
-    function execute(
-        address dest,
-        uint256 value,
-        bytes calldata funcData
-    )
-    external
-    requireFromEntryPointOrOwner {
-        (bool success, bytes memory result) =
-            dest.call({value: value})(funcData);
+        function execute(
+            address dest,
+            uint256 value,
+            bytes calldata funcData
+        )
+        external
+        requireFromEntryPointOrOwner {
+            (bool success, bytes memory result) =
+                dest.call{value: value}(funcData);
 
-        if (!success) {
-            revert(MinimalAccount_CallFailed(result));
+            if (!success) {
+                revert MinimalAccount_CallFailed(result);
+            }
         }
-    }
 
     receive() external payable {}
 
