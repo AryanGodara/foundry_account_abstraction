@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { Script } from "forge-std/Script.sol";
+import { Script, console2 } from "forge-std/Script.sol";
+import { EntryPoint } from "@account-abstraction/contracts/core/EntryPoint.sol";
 
 contract HelperConfig is Script {
     ///////////////////////////
@@ -24,7 +25,7 @@ contract HelperConfig is Script {
     uint256 public constant ZKSYNC_SEPOLIA_CHAIN_ID = 300;
     uint256 public constant LOCAL_CHAIN_ID = 31337;
     address public constant BURNER_WALLET = 0x4BC8e81Ad3BE83276837f184138FC96770C14297;
-    address public constant FOUNDRY_DEFAULT_SENDER =
+    address public constant FOUNDRY_DEFAULT_WALLET =
                             address(uint160(uint256(keccak256("foundry default caller"))));
     address public constant ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
@@ -47,11 +48,11 @@ contract HelperConfig is Script {
     // GETTERS
     ///////////////////////////
 
-    function getConfig() public view returns (NetworkConfig memory) {
+    function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);
     }
 
-    function getConfigByChainId(uint256 chainId) public view returns (NetworkConfig memory) {
+    function getConfigByChainId(uint256 chainId) public returns (NetworkConfig memory) {
         if (chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilEthConfig();
         }
@@ -75,15 +76,21 @@ contract HelperConfig is Script {
             account: BURNER_WALLET
         });
     }
-    function getOrCreateAnvilEthConfig() public view returns (NetworkConfig memory) {
+    function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
         if (localNetworkConfig.account != address(0)) {
             return localNetworkConfig;
         }
 
         //TODO Deploy a mock EntryPoint contract...
+        console2.log("Deploying mocks...");
+
+        vm.startBroadcast(FOUNDRY_DEFAULT_WALLET);
+        EntryPoint entryPoint = new EntryPoint();
+        vm.stopBroadcast();
+
         return NetworkConfig({
-            entryPoint: address(0),
-            account: FOUNDRY_DEFAULT_SENDER
+            entryPoint: address(entryPoint),
+            account: FOUNDRY_DEFAULT_WALLET
         });
     }
 
