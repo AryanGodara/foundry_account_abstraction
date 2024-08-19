@@ -23,11 +23,11 @@ contract HelperConfig is Script {
     ///////////////////////////
     uint256 public constant ETH_SEPOLIA_CHAIN_ID = 11155111;
     uint256 public constant ZKSYNC_SEPOLIA_CHAIN_ID = 300;
-    uint256 public constant LOCAL_CHAIN_ID = 31337;
+    uint256 public constant LOCAL_CHAIN_ID = 31337; // Anvil
     address public constant BURNER_WALLET = 0x4BC8e81Ad3BE83276837f184138FC96770C14297;
-    address public constant FOUNDRY_DEFAULT_WALLET =
-                            address(uint160(uint256(keccak256("foundry default caller"))));
+    // address public constant FOUNDRY_DEFAULT_WALLET = address(uint160(uint256(keccak256("foundry default caller"))));
     address public constant ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    // address public constant ANVIL_DEFAULT_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
 
     ///////////////////////////
     // STATE
@@ -84,14 +84,16 @@ contract HelperConfig is Script {
         //TODO Deploy a mock EntryPoint contract...
         console2.log("Deploying mocks...");
 
-        vm.startBroadcast(FOUNDRY_DEFAULT_WALLET);
+        vm.startBroadcast(ANVIL_DEFAULT_ACCOUNT);
         EntryPoint entryPoint = new EntryPoint();
         vm.stopBroadcast();
 
-        return NetworkConfig({
+        localNetworkConfig = NetworkConfig({
             entryPoint: address(entryPoint),
-            account: FOUNDRY_DEFAULT_WALLET
+            account: ANVIL_DEFAULT_ACCOUNT
         });
+
+        return localNetworkConfig;
     }
 
     function run() public {
